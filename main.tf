@@ -1,24 +1,7 @@
-resource "aws_s3_bucket" "tfstate" {
-
-  bucket = "mehak-github-runner-tfstate-12345"
-
-  tags = {
-
-    Name = "terraform-state-bucket"
-  }
+variable "github_runner_token" {
+  type      = string
+  sensitive = true
 }
-
-resource "aws_s3_bucket_versioning" "versioning" {
-
-  bucket = aws_s3_bucket.tfstate.id
-
-  versioning_configuration {
-
-    status = "Enabled"
-  }
-}
-
-
 ############################
 # VPC
 ############################
@@ -324,8 +307,8 @@ curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/down
 tar xzf actions-runner.tar.gz
 
 ./config.sh \
---url https://github.com/Mehak-gupta23/github-actions-prac \
---token BS4RIHBXMJ2HEKRVQA5HGDLKE75G2 \
+--url https://github.com/Mehak-gupta23/github-actions-final \
+--token ${github_runner_token} \
 --unattended \
 --name github-runner
 
