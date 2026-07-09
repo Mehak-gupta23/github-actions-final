@@ -2,11 +2,28 @@ name: One Click Infrastructure Deployment
 
 on:
   workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose Terraform action"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
 
 jobs:
   terraform:
-    name: Deploy Infrastructure
+    name: Terraform ${{ github.event.inputs.action }}
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: .
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository
@@ -27,11 +44,20 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
+        if: github.event.inputs.action == 'plan'
         run: terraform plan
 
       - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
         run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
