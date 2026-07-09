@@ -21,6 +21,10 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      AWS_REGION: ap-south-1
+      TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -36,6 +40,33 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
+
+      - name: Ensure Terraform Backend Bucket Exists
+        run: |
+          if [ -z "$TF_STATE_BUCKET" ]; then
+            echo "TF_STATE_BUCKET secret is not set"
+            exit 1
+          fi
+
+          if aws s3api head-bucket --bucket "$TF_STATE_BUCKET" 2>/dev/null; then
+            echo "Bucket $TF_STATE_BUCKET already exists"
+          else
+            echo "Creating bucket $TF_STATE_BUCKET in $AWS_REGION"
+            aws s3api create-bucket \
+              --bucket "$TF_STATE_BUCKET" \
+              --region "$AWS_REGION" \
+              --create-bucket-configuration LocationConstraint="$AWS_REGION"
+
+            aws s3api wait bucket-exists --bucket "$TF_STATE_BUCKET"
+
+            aws s3api put-bucket-versioning \
+              --bucket "$TF_STATE_BUCKET" \
+              --versioning-configuration Status=Enabled
+
+            aws s3api put-bucket-encryption \
+              --bucket "$TF_STATE_BUCKET" \
+              --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+          fi
 
       - name: Terraform Init
         run: terraform init
