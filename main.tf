@@ -313,7 +313,8 @@ tar xzf actions-runner.tar.gz
 --name github-runner
 
 ./run.sh
-
+sudo ./svc.sh install
+sudo ./svc.sh start
 EOF
 
   tags = {
