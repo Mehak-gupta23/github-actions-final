@@ -308,7 +308,7 @@ tar xzf actions-runner.tar.gz
 
 ./config.sh \
 --url https://github.com/Mehak-gupta23/github-actions-final \
---token ${github_runner_token} \
+--token ${var.github_runner_token} \
 --unattended \
 --name github-runner
 
