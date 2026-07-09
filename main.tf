@@ -295,26 +295,31 @@ resource "aws_instance" "github_runner" {
 #!/bin/bash
 set -e
 
-export RUNNER_ALLOW_RUNASROOT=1
-
 apt update -y
 apt install -y curl wget unzip
 
-mkdir -p /actions-runner
-cd /actions-runner
+RUNNER_USER="ubuntu"
+RUNNER_DIR="/home/ubuntu/actions-runner"
 
-curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz
+mkdir -p "$RUNNER_DIR"
+chown -R "$RUNNER_USER:$RUNNER_USER" "$RUNNER_DIR"
 
-tar xzf actions-runner.tar.gz
+cd "$RUNNER_DIR"
 
-./config.sh \
+sudo -u "$RUNNER_USER" curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz
+
+sudo -u "$RUNNER_USER" tar xzf actions-runner.tar.gz
+
+sudo -u "$RUNNER_USER" ./config.sh \
 --url https://github.com/Mehak-gupta23/github-actions-final \
 --token ${var.github_runner_token} \
 --unattended \
 --name github-runner \
 --replace
 
-./run.sh
+./svc.sh install "$RUNNER_USER"
+./svc.sh start
+
 EOF
 
   tags = {
