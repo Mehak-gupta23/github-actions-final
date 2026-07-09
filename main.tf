@@ -293,14 +293,15 @@ resource "aws_instance" "github_runner" {
 
   user_data = <<-EOF
 #!/bin/bash
+set -e
+
+export RUNNER_ALLOW_RUNASROOT=1
 
 apt update -y
-
 apt install -y curl wget unzip
 
-mkdir actions-runner
-
-cd actions-runner
+mkdir -p /actions-runner
+cd /actions-runner
 
 curl -o actions-runner.tar.gz -L https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz
 
@@ -310,11 +311,10 @@ tar xzf actions-runner.tar.gz
 --url https://github.com/Mehak-gupta23/github-actions-final \
 --token ${var.github_runner_token} \
 --unattended \
---name github-runner
+--name github-runner \
+--replace
 
 ./run.sh
-sudo ./svc.sh install
-sudo ./svc.sh start
 EOF
 
   tags = {
