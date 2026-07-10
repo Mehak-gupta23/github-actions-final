@@ -1,0 +1,27 @@
+name: Caching Demo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cache-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore cache
+        id: my-cache
+        uses: actions/cache@v4
+        with:
+          path: demo-cache
+          key: demo-cache-v1
+
+      - name: Create file if cache is missing
+        if: steps.my-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir demo-cache
+          echo "Created on $(date)" > demo-cache/message.txt
+
+      - name: Show cache result
+        run: |
+          echo "Cache hit: ${{ steps.my-cache.outputs.cache-hit }}"
+          cat demo-cache/message.txt
